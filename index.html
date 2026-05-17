@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ふわりととどく">
+<meta name="theme-color" content="#5DCAA5">
+<link rel="manifest" href="manifest.json">
+<title>ふわりととどく</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#D8D6D0;border-radius:99px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #5DCAA5;outline-offset:2px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:#F5F3EE;min-height:100vh;display:flex;justify-content:center;padding:env(safe-area-inset-top,20px) 16px env(safe-area-inset-bottom,20px)}
+.screen{display:none;width:100%;max-width:390px;animation:fadeIn .25s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.brow{display:flex;align-items:flex-end;gap:4px;margin-bottom:4px}
+.bub{border-radius:50%;background:#9FE1CB}
+.pg-title{font-size:17px;font-weight:500;color:#1a1a1a}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid #E0DED8;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#666;flex-shrink:0}
+.row-hdr{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.card{background:#fff;border:1px solid #E8E6E0;border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.sec-lbl{font-size:11px;color:#aaa;letter-spacing:.06em;margin-bottom:10px}
+.neg-bar{background:#fff;border:1px solid #E8E6E0;border-radius:14px;padding:14px 16px;margin-bottom:18px}
+.neg-lbl{font-size:10px;color:#aaa;letter-spacing:.06em;margin-bottom:6px}
+.neg-txt{font-size:13px;color:#444;line-height:1.8}
+.chip{font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;color:#666;cursor:pointer}
+.chip.on{background:#E1F5EE;border-color:#5DCAA5;color:#085041;font-weight:500}
+.lchip{font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;color:#999;cursor:pointer}
+.lchip.on{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
+.prim-btn{width:100%;padding:13px;border-radius:12px;border:none;background:#5DCAA5;color:#fff;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
+.prim-btn:disabled{opacity:.5;cursor:default}
+.sec-btn{width:100%;padding:12px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;color:#444;font-size:14px;cursor:pointer;font-family:inherit;margin-top:10px}
+.loading{text-align:center;padding:1.5rem;display:none}
+.loading.show{display:block}
+.bub-ani{display:flex;justify-content:center;gap:8px;margin-bottom:10px}
+.bub-ani span{width:10px;height:10px;border-radius:50%;background:#9FE1CB;animation:bob 1.2s ease-in-out infinite}
+.bub-ani span:nth-child(2){animation-delay:.2s;background:#AFA9EC}
+.bub-ani span:nth-child(3){animation-delay:.4s;background:#F0C0A0}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.load-t{font-size:13px;color:#aaa;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.empty{text-align:center;padding:3rem 0;font-size:13px;color:#bbb}
+input[type="file"]{display:none}
+
+/* トップ */
+.top-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.app-name{font-size:18px;font-weight:500;color:#1a1a1a}
+.lang-btn{font-size:11px;color:#999;border:1px solid #D8D6D0;border-radius:99px;padding:4px 12px;background:#fff;cursor:pointer;position:relative}
+.lang-panel{display:none;position:absolute;right:0;top:32px;background:#fff;border:1px solid #E0DED8;border-radius:12px;padding:6px;z-index:10;min-width:110px}
+.lang-panel.open{display:block}
+.lang-opt{font-size:13px;color:#555;padding:6px 12px;border-radius:8px;cursor:pointer}
+.lang-opt:hover{background:#F5F3EE}
+.lang-opt.chosen{color:#085041;font-weight:500}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{background:#fff;border:1px solid #E8E6E0;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+.choice:hover{border-color:#C0DDD5}
+.c-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.c-txt{flex:1}
+.c-title{font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:2px}
+.c-desc{font-size:11px;color:#bbb}
+
+/* ブログ検索 */
+.float-area{min-height:64px;display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start;padding:10px;background:#F0EDE6;border-radius:12px;margin-bottom:14px}
+.fhint{font-size:12px;color:#bbb;width:100%;text-align:center;align-self:center}
+.kw{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;color:#555;cursor:pointer}
+.kw:hover{background:#E1F5EE;border-color:#5DCAA5;color:#085041}
+.search-row{display:flex;gap:8px;margin-bottom:14px}
+.search-row input{flex:1;font-size:14px;padding:11px 14px;border:1px solid #D8D6D0;border-radius:12px;background:#fff;outline:none;font-family:inherit}
+.search-row input:focus{border-color:#5DCAA5}
+.search-row input::placeholder{color:#ccc}
+.search-btn{padding:0 16px;border-radius:12px;border:none;background:#5DCAA5;color:#fff;font-size:14px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap}
+.search-btn:disabled{opacity:.5;cursor:default}
+.prog-wrap{display:none;margin-bottom:16px}
+.prog-wrap.show{display:block}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:6px}
+.prog-bar-w{background:#E8E6E0;border-radius:99px;height:6px;margin-bottom:10px;overflow:hidden}
+.prog-bar{height:6px;border-radius:99px;background:#5DCAA5;transition:width .4s ease}
+.fstatus{display:flex;flex-direction:column;gap:6px;max-height:110px;overflow-y:auto}
+.fitem{display:flex;align-items:center;gap:8px;font-size:12px;color:#888}
+.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.fdot.checking{background:#F0B860;animation:pulse 1s infinite}
+.fdot.ok{background:#5DCAA5}
+.fdot.ng{background:#E08080}
+.fdot.warn{background:#F0B860}
+.res-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.res-cnt{font-size:13px;color:#666}
+.res-cnt span{font-weight:500;color:#085041}
+.f-badge{font-size:11px;background:#E1F5EE;color:#085041;border-radius:99px;padding:3px 10px}
+.rcard{background:#fff;border:1px solid #E8E6E0;border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;text-decoration:none;display:block;transition:border-color .15s}
+.rcard:hover{border-color:#C0DDD5}
+.rcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.rtitle{font-size:14px;font-weight:500;color:#1a1a1a;flex:1;line-height:1.5}
+.score-pill{font-size:10px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#085041;flex-shrink:0}
+.rmeta{font-size:11px;color:#bbb;margin-bottom:6px}
+.rdesc{font-size:13px;color:#555;line-height:1.7;margin-bottom:8px}
+.rtags{display:flex;gap:5px;flex-wrap:wrap}
+.rtag{font-size:10px;padding:2px 7px;border-radius:99px;background:#F0EDE6;color:#888}
+.rtag.p{background:#E1F5EE;color:#085041}
+.rtag.en{background:#EEEDFE;color:#3C3489}
+.rtag.de{background:#FEF3E2;color:#7A4A00}
+.rtag.es{background:#FBEAF0;color:#72243E}
+.trans-b{font-size:10px;background:#FEF3E2;color:#7A4A00;padding:2px 7px;border-radius:99px;margin-left:4px}
+
+/* クイズ */
+.mode-row{display:flex;gap:8px;margin-bottom:14px}
+.mb{flex:1;padding:9px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;font-size:11px;color:#666;cursor:pointer;text-align:center;font-family:inherit}
+.mb.on{background:#E1F5EE;border-color:#5DCAA5;color:#085041;font-weight:500}
+.stats-row{display:flex;gap:8px;margin-bottom:14px}
+.stat{flex:1;background:#fff;border:1px solid #E8E6E0;border-radius:12px;padding:10px;text-align:center}
+.stat-v{font-size:20px;font-weight:500;color:#1a1a1a}
+.stat-l{font-size:10px;color:#aaa}
+.cat-tag{display:inline-block;font-size:11px;padding:3px 10px;border-radius:99px;background:#E1F5EE;color:#085041;margin-bottom:8px}
+.q-text{font-size:15px;font-weight:500;color:#1a1a1a;line-height:1.7;margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{padding:11px 14px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;font-size:13px;color:#444;text-align:left;cursor:pointer;font-family:inherit}
+.opt:hover:not(:disabled){border-color:#C0DDD5;background:#F5FBFA}
+.opt.correct{background:#E1F5EE;border-color:#5DCAA5;color:#085041}
+.opt.wrong{background:#FBEAF0;border-color:#E08080;color:#72243E}
+.opt:disabled{cursor:default}
+.exp{background:#F5F3EE;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13px;color:#555;line-height:1.7;display:none}
+.exp.show{display:block}
+.exp-src{margin-top:8px;padding-top:8px;border-top:1px solid #E8E6E0;font-size:11px;color:#aaa}
+.r-msg{font-size:13px;font-weight:500;margin-top:10px}
+.r-msg.ok{color:#085041}
+.r-msg.ng{color:#72243E}
+.next-btn{display:none;margin-top:10px}
+.next-btn.show{display:block}
+
+/* 記録 */
+.milestone-card{background:linear-gradient(135deg,#E1F5EE,#EEF8F4);border:1px solid #C0E8D8;border-radius:16px;padding:18px;margin-bottom:14px;text-align:center}
+.m-bubbles{min-height:50px;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:5px;margin-bottom:10px}
+.mbub{border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.8),#9FE1CB);border:1px solid rgba(255,255,255,.6);animation:floatUp .4s ease;flex-shrink:0}
+@keyframes floatUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.m-count{font-size:28px;font-weight:500;color:#085041;margin-bottom:4px}
+.m-label{font-size:13px;color:#0F6E56}
+.m-msg{font-size:12px;color:#aaa;margin-top:6px;line-height:1.6}
+.tummy-row{display:flex;gap:8px;margin-bottom:4px}
+.tummy-btn{flex:1;padding:10px 6px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;font-size:11px;color:#666;cursor:pointer;text-align:center;font-family:inherit;line-height:1.5}
+.tummy-btn .ti{font-size:22px;display:block;margin-bottom:4px}
+.tummy-btn.on{border-color:#5DCAA5;background:#E1F5EE;color:#085041;font-weight:500}
+.tummy-btn.warn.on{border-color:#F0B860;background:#FEF3E2;color:#7A4A00}
+.tummy-btn.bad.on{border-color:#E08080;background:#FBEAF0;color:#72243E}
+.detail-area{display:none;background:#F5F3EE;border-radius:12px;padding:14px;margin-top:10px}
+.detail-area.show{display:block}
+.d-sec{margin-bottom:12px}
+.d-lbl{font-size:11px;color:#aaa;margin-bottom:7px}
+.dchip{font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;color:#666;cursor:pointer}
+.dchip.on{background:#FBEAF0;border-color:#E08080;color:#72243E}
+.dchip.suggested{background:#E1F5EE;border-color:#5DCAA5;color:#085041;font-weight:500}
+.rec-method-row{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.rec-method-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:1px solid #D8D6D0;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:all .15s}
+.rec-method-btn:hover{border-color:#C0DDD5;background:#F5FBFA}
+.rec-method-btn.on{border-color:#5DCAA5;background:#E1F5EE}
+.rm-icon{font-size:24px;flex-shrink:0}
+.rm-title{font-size:14px;font-weight:500;color:#1a1a1a;display:block;margin-bottom:2px}
+.rm-desc{font-size:11px;color:#aaa;display:block}
+.photo-trigger{width:100%;padding:16px;border-radius:14px;border:1.5px dashed #C0DDD5;background:#F5FBFA;font-size:15px;color:#0F6E56;cursor:pointer;text-align:center;font-family:inherit;margin-bottom:8px;transition:all .15s}
+.photo-trigger:hover{background:#E1F5EE;border-color:#5DCAA5}
+.photo-trigger .pt-icon{font-size:32px;display:block;margin-bottom:6px}
+.photo-trigger .pt-sub{font-size:11px;color:#aaa;margin-top:4px;display:block}
+.photo-sheet{display:none;background:#fff;border:1px solid #E8E6E0;border-radius:14px;overflow:hidden;margin-bottom:8px}
+.photo-sheet.show{display:block}
+.photo-sheet-item{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;border-bottom:1px solid #F5F3EE;transition:background .15s}
+.photo-sheet-item:last-child{border-bottom:none}
+.photo-sheet-item:hover{background:#F5F3EE}
+.psi-icon{font-size:24px;flex-shrink:0}
+.psi-txt{flex:1}
+.psi-title{font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:2px}
+.psi-desc{font-size:11px;color:#aaa}
+.photo-skip{font-size:12px;color:#bbb;text-align:center;cursor:pointer;padding:6px;display:block}
+.privacy-notice{background:#EEEDFE;border-radius:10px;padding:10px 12px;font-size:12px;color:#3C3489;line-height:1.6;margin-bottom:8px;display:none}
+.privacy-notice.show{display:block}
+.photo-preview-area{background:#F0EDE6;border-radius:12px;padding:14px;margin-top:8px;text-align:center;display:none}
+.photo-preview-area.show{display:block}
+.analyze-btn{width:100%;padding:10px;border-radius:12px;border:none;background:#AFA9EC;color:#fff;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:8px}
+.analyze-btn:disabled{opacity:.5;cursor:default}
+.ai-suggest{background:#fff;border:1px solid #E8E6E0;border-radius:12px;padding:12px 14px;margin-top:10px;display:none}
+.ai-suggest.show{display:block}
+.ai-suggest-lbl{font-size:11px;color:#aaa;margin-bottom:6px}
+.ai-suggest-txt{font-size:13px;color:#555;line-height:1.7;margin-bottom:8px}
+.disclaimer{background:#FEF3E2;border:1px solid #F0D090;border-radius:10px;padding:10px 12px;font-size:11px;color:#7A4A00;line-height:1.6}
+.emoji-row{display:flex;gap:8px}
+.emoji-btn{flex:1;padding:10px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;font-size:22px;cursor:pointer;text-align:center}
+.emoji-btn.on{border-color:#5DCAA5;background:#E1F5EE}
+.rec-input{width:100%;font-size:14px;padding:11px 14px;border:1px solid #D8D6D0;border-radius:12px;background:#fff;font-family:inherit;outline:none;color:#1a1a1a}
+.rec-input:focus{border-color:#5DCAA5}
+.rec-input::placeholder{color:#ccc}
+textarea.rec-input{resize:none;height:80px;line-height:1.7}
+.saved-card{background:#E1F5EE;border:1px solid #5DCAA5;border-radius:16px;padding:20px;text-align:center;display:none;margin-top:14px}
+.saved-card.show{display:block}
+.saved-title{font-size:15px;font-weight:500;color:#085041;margin-bottom:6px}
+.saved-msg{font-size:13px;color:#0F6E56;line-height:1.7}
+.doctor-card{background:#EEEDFE;border:1px solid #AFA9EC;border-radius:14px;padding:14px;margin-top:14px;display:none}
+.doctor-card.show{display:block}
+.doctor-title{font-size:13px;font-weight:500;color:#3C3489;margin-bottom:8px}
+.doctor-content{font-size:13px;color:#534AB7;line-height:1.8}
+
+/* カレンダー */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#bbb;background:#F5F3EE;position:relative;cursor:default}
+.cal-day.good{background:#E1F5EE;color:#085041}
+.cal-day.mid{background:#FEF3E2;color:#7A4A00}
+.cal-day.bad{background:#FBEAF0;color:#72243E}
+.cal-day.has-photo::after{content:"📷";font-size:7px;position:absolute;bottom:1px;right:2px}
+.cal-day.none{background:#F5F3EE;color:#bbb}
+.cal-day.none::before{content:"☺";font-size:9px;position:absolute;top:1px;left:2px}
+.cal-day.today{border:1.5px solid #5DCAA5}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:2px}
+.cal-header div{font-size:10px;color:#bbb;text-align:center}
+.photo-timeline{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.photo-tl-item{display:flex;align-items:center;gap:12px;padding:10px;background:#F5F3EE;border-radius:12px}
+.photo-tl-thumb{width:44px;height:44px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.photo-tl-txt{flex:1}
+.photo-tl-date{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:2px}
+.photo-tl-state{font-size:11px;color:#aaa}
+/* 振り返る */
+.period-row{display:flex;gap:8px;margin-bottom:20px}
+.period-btn{flex:1;padding:8px;border-radius:12px;border:1px solid #D8D6D0;background:#fff;font-size:12px;color:#666;cursor:pointer;text-align:center;font-family:inherit}
+.period-btn.on{background:#E1F5EE;border-color:#5DCAA5;color:#085041;font-weight:500}
+.graph-wrap{display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:8px}
+.g-bar-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.g-bar{width:100%;border-radius:4px 4px 0 0;transition:height .4s ease}
+.g-bar.good{background:#5DCAA5}
+.g-bar.mid{background:#F0D090}
+.g-bar.bad{background:#E8C0C0}
+.g-date{font-size:9px;color:#bbb;writing-mode:horizontal-tb}
+.trend-card{border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.trend-card.positive{background:#E1F5EE;border:1px solid #C0E8D8}
+.trend-card.neutral{background:#F5F3EE;border:1px solid #E8E6E0}
+.trend-icon{font-size:24px;flex-shrink:0}
+.trend-txt{font-size:13px;color:#444;line-height:1.7}
+.trend-txt strong{color:#085041}
+.period-summary{background:#fff;border:1px solid #E8E6E0;border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F5F3EE}
+.summary-row:last-child{border-bottom:none}
+.summary-lbl{font-size:12px;color:#888}
+.summary-val{font-size:13px;font-weight:500;color:#1a1a1a}
+.summary-val.good{color:#085041}
+.summary-val.bad{color:#72243E}
+
+/* 概要 */
+.ob-slide{display:none;flex:1;flex-direction:column}
+.ob-slide.active{display:flex}
+.ob-sit-btn{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;border:1px solid #E8E6E0;background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:all .15s}
+.ob-sit-btn:hover{border-color:#C0DDD5;background:#F5FBFA}
+.ob-sit-btn.on{border-color:#5DCAA5;background:#E1F5EE}
+.about-sec{margin-bottom:16px}
+.about-title{font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:6px}
+.about-text{font-size:13px;color:#666;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- オンボーディング -->
+<div class="screen" id="s-onboard">
+<div style="width:100%;max-width:390px;height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:120px">
+  <div style="flex:1;display:flex;flex-direction:column" id="ob-slides">
+
+    <!-- OB0: タイトル -->
+    <div class="ob-slide active" id="obs-0">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px">
+        <div style="display:flex;align-items:flex-end;gap:5px;margin-bottom:16px;justify-content:center">
+          <div class="bub" style="width:10px;height:10px;opacity:.35;animation:bob 3s ease-in-out infinite"></div>
+          <div class="bub" style="width:18px;height:18px;opacity:.6;animation:bob 4s ease-in-out .5s infinite"></div>
+          <div class="bub" style="width:28px;height:28px;opacity:.9;animation:bob 3.5s ease-in-out 1s infinite"></div>
+          <div class="bub" style="width:18px;height:18px;opacity:.6;animation:bob 4s ease-in-out .3s infinite"></div>
+          <div class="bub" style="width:10px;height:10px;opacity:.35;animation:bob 3s ease-in-out .8s infinite"></div>
+        </div>
+        <div style="font-size:28px;font-weight:500;color:#1a1a1a;text-align:center;margin-bottom:8px;letter-spacing:.03em">ふわりととどく</div>
+        <div style="font-size:14px;color:#aaa;text-align:center;line-height:1.7">IBDと生きる子どもたちと、<br>その家族のために。</div>
+      </div>
+    </div>
+
+    <!-- OB1: ここは -->
+    <div class="ob-slide" id="obs-1">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;gap:16px">
+        <div style="font-size:56px">🫧</div>
+        <div style="font-size:22px;font-weight:500;color:#1a1a1a;text-align:center;line-height:1.5">ここは、あなたのための場所です</div>
+        <div style="font-size:14px;color:#666;line-height:1.9;text-align:center">病気のことを調べたい日も、<br>誰かの声を聞きたい夜も、<br>ただここにいたい朝も。<br><br><span style="color:#085041;font-weight:500">何もしなくていい。</span><br>眺めるだけでもいい。</div>
+      </div>
+    </div>
+
+    <!-- OB2: できること -->
+    <div class="ob-slide" id="obs-2">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;gap:10px">
+        <div style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:4px">できること</div>
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:14px;border:1px solid #E8E6E0"><div style="font-size:22px;flex-shrink:0">📖</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">誰かのブログを読む</div><div style="font-size:11px;color:#aaa">当事者・親御さんの声を探す</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:14px;border:1px solid #E8E6E0"><div style="font-size:22px;flex-shrink:0">💡</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">IBDについて学ぶ</div><div style="font-size:11px;color:#aaa">AIが毎回違うクイズを生成</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:14px;border:1px solid #E8E6E0"><div style="font-size:22px;flex-shrink:0">✏️</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">症状・気持ちを記録する</div><div style="font-size:11px;color:#aaa">写真も安全に保存できます</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:14px;border:1px solid #E8E6E0"><div style="font-size:22px;flex-shrink:0">🫧</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">眺めて、つながる</div><div style="font-size:11px;color:#aaa">匿名で、遠くから</div></div></div>
+      </div>
+    </div>
+
+    <!-- OB3: プライバシー -->
+    <div class="ob-slide" id="obs-3">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;gap:16px">
+        <div style="font-size:56px">🔒</div>
+        <div style="font-size:22px;font-weight:500;color:#1a1a1a;text-align:center">プライバシーを大切にします</div>
+        <div style="font-size:14px;color:#666;line-height:1.9;text-align:center">写真は<span style="color:#085041;font-weight:500">カメラロールに残りません</span>。<br>アプリ内の保護フォルダに保存されます。<br><br>つながる機能は<span style="color:#085041;font-weight:500">完全匿名</span>。<br>アカウント登録も不要です。<br><br>ブログは<span style="color:#085041;font-weight:500">AIが審査</span>したものだけを表示。</div>
+      </div>
+    </div>
+
+    <!-- OB4: 状況選択 -->
+    <div class="ob-slide" id="obs-4">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px">
+        <div style="font-size:16px;font-weight:500;color:#1a1a1a;text-align:center;margin-bottom:6px">今、どんな状況ですか？</div>
+        <div style="font-size:13px;color:#888;text-align:center;line-height:1.7;margin-bottom:16px">あなたに合った内容をお届けします。<br>後から変えることもできます。</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button class="ob-sit-btn" onclick="obSelectSit('acute',this)"><div style="font-size:22px;flex-shrink:0">🏥</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">急性期・入院中</div><div style="font-size:11px;color:#aaa">今まさに闘っています</div></div></button>
+          <button class="ob-sit-btn" onclick="obSelectSit('parent',this)"><div style="font-size:22px;flex-shrink:0">👨‍👩‍👧</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">子どもの付き添い・家族として</div><div style="font-size:11px;color:#aaa">そばで支えています</div></div></button>
+          <button class="ob-sit-btn" onclick="obSelectSit('maintain',this)"><div style="font-size:22px;flex-shrink:0">💊</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">治療を続けながら日常を送っています</div><div style="font-size:11px;color:#aaa">寛解維持・通院中</div></div></button>
+          <button class="ob-sit-btn" onclick="obSelectSit('other',this)"><div style="font-size:22px;flex-shrink:0">🔍</div><div><div style="font-size:13px;font-weight:500;color:#1a1a1a">情報を集めています</div><div style="font-size:11px;color:#aaa">調べている・支援したい</div></div></button>
+        </div>
+        <span style="font-size:12px;color:#bbb;text-align:center;margin-top:12px;cursor:pointer;display:block" onclick="obNext()">スキップする</span>
+      </div>
+    </div>
+
+    <!-- OB5: はじめましょう -->
+    <div class="ob-slide" id="obs-5">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;gap:16px">
+        <div style="position:relative;width:140px;height:140px">
+          <div class="bub" style="position:absolute;width:22px;height:22px;top:20px;left:28px;opacity:.5;animation:bob 3.5s ease-in-out infinite"></div>
+          <div class="bub" style="position:absolute;width:38px;height:38px;top:48px;left:56px;opacity:.8;animation:bob 4s ease-in-out .5s infinite"></div>
+          <div class="bub" style="position:absolute;width:26px;height:26px;top:28px;right:22px;opacity:.6;animation:bob 3s ease-in-out 1s infinite"></div>
+          <div class="bub" style="position:absolute;width:18px;height:18px;bottom:28px;left:38px;opacity:.4;animation:bob 4.5s ease-in-out .3s infinite"></div>
+          <div class="bub" style="position:absolute;width:32px;height:32px;bottom:18px;right:28px;opacity:.7;animation:bob 3.8s ease-in-out .8s infinite"></div>
+        </div>
+        <div style="font-size:22px;font-weight:500;color:#1a1a1a;text-align:center">ふわりと、はじめましょう</div>
+        <div style="font-size:14px;color:#666;line-height:1.9;text-align:center">ここにいるだけで、十分です。<br><br>病院の庭から昼にシャボン玉を<br>飛ばしたように、このアプリが<br>誰かのもとに<span style="color:#085041;font-weight:500">ふわりととどきますように。</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ドット -->
+  <div style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);display:flex;gap:6px" id="ob-dots"></div>
+
+  <!-- ボタン -->
+  <div style="position:absolute;bottom:32px;left:24px;right:24px">
+    <button class="prim-btn" id="ob-next-btn" onclick="obNext()">はじめる</button>
+    <span style="display:block;text-align:center;font-size:12px;color:#bbb;margin-top:10px;cursor:pointer" id="ob-skip" onclick="obFinish()">スキップしてアプリを開く</span>
+  </div>
+</div>
+</div>
+
+<!-- トップ -->
+<div class="screen active" id="s-top"><div style="width:100%;max-width:390px">
+  <div id="install-banner" style="display:none;background:#fff;border:1px solid #E8E6E0;border-radius:14px;padding:12px 16px;margin-bottom:16px;gap:12px;align-items:center">
+    <div style="font-size:22px">🫧</div>
+    <div style="flex:1;font-size:12px;color:#555;line-height:1.6">ホーム画面に追加するとアプリのように使えます。Safari → 共有 →「ホーム画面に追加」</div>
+    <div style="font-size:18px;color:#ccc;cursor:pointer" onclick="this.parentElement.style.display='none'">×</div>
+  </div>
+  <div class="top-hdr">
+    <div><div class="brow"><div class="bub" style="width:6px;height:6px;opacity:.35"></div><div class="bub" style="width:11px;height:11px;opacity:.6"></div><div class="bub" style="width:17px;height:17px;opacity:.9"></div></div><div class="app-name">ふわりととどく</div></div>
+    <div style="position:relative">
+      <button class="lang-btn" id="lang-toggle" onclick="toggleLang()">🌐 言語</button>
+      <div class="lang-panel" id="lang-panel">
+        <div class="lang-opt chosen" onclick="setLang('日本語',this)">日本語</div>
+        <div class="lang-opt" onclick="setLang('English',this)">English</div>
+        <div class="lang-opt" onclick="setLang('Español',this)">Español</div>
+        <div class="lang-opt" onclick="setLang('Deutsch',this)">Deutsch</div>
+      </div>
+    </div>
+  </div>
+  <div class="neg-bar"><div class="neg-lbl">今日のことば</div><div class="neg-txt" id="top-neg"></div></div>
+  <div class="choices">
+    <div class="choice" onclick="go('s-search')"><div class="c-icon" style="background:#EEEDFE">📖</div><div class="c-txt"><div class="c-title">誰かのブログを読む</div><div class="c-desc">当事者・親御さんの声を探す</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+    <div class="choice" onclick="go('s-quiz')"><div class="c-icon" style="background:#E1F5EE">💡</div><div class="c-txt"><div class="c-title">何か学ぶ</div><div class="c-desc">クイズでIBDを知る</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+    <div class="choice" onclick="go('s-record')"><div class="c-icon" style="background:#FBEAF0">✏️</div><div class="c-txt"><div class="c-title">記録する</div><div class="c-desc">症状・写真・気持ちをメモする</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+    <div class="choice" onclick="go('s-review')"><div class="c-icon" style="background:#E6F1FB">📈</div><div class="c-txt"><div class="c-title">振り返る</div><div class="c-desc">自分のペースで、長い目で見る</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+    <div class="choice" onclick="go('s-connect')"><div class="c-icon" style="background:#EEF0FE">🫧</div><div class="c-txt"><div class="c-title">つながる</div><div class="c-desc">眺める・匿名でつぶやく</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+    <div class="choice" onclick="go('s-about')"><div class="c-icon" style="background:#F1EFE8">ℹ️</div><div class="c-txt"><div class="c-title">このアプリの概要を知りたい</div><div class="c-desc">ふわりととどくについて</div></div><div style="font-size:14px;color:#ccc">›</div></div>
+  </div>
+</div></div>
+
+<!-- ブログ検索 -->
+<div class="screen" id="s-search"><div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">ブログを探す</div></div></div>
+  <div class="neg-bar"><div class="neg-lbl">今日のことば</div><div class="neg-txt" id="search-neg"></div></div>
+  <p class="sec-lbl">今のフェーズは？</p><div class="chips" id="phases" style="margin-bottom:12px;gap:6px"></div>
+  <div class="float-area" id="floats"><span class="fhint">フェーズを選ぶとキーワードが浮かびます</span></div>
+  <p class="sec-lbl">言語</p><div class="chips" id="blog-langs" style="margin-bottom:12px;gap:6px"></div>
+  <div class="search-row"><input type="text" id="search-input" placeholder="キーワードで検索、または編集…"><button class="search-btn" id="search-btn" onclick="startSearch()">検索する</button></div>
+  <div class="prog-wrap" id="prog-wrap">
+    <div class="prog-hdr"><div style="font-size:12px;color:#666">🫧 AIがフィルタリング中…</div><div style="font-size:12px;color:#aaa" id="prog-cnt">0/0</div></div>
+    <div class="prog-bar-w"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="fstatus" id="fstatus"></div>
+  </div>
+  <div id="result-area"></div>
+</div></div>
+
+<!-- クイズ -->
+<div class="screen" id="s-quiz"><div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">学ぶ</div></div></div>
+  <div class="neg-bar"><div class="neg-lbl">今日のことば</div><div class="neg-txt" id="quiz-neg"></div></div>
+  <p class="sec-lbl">テーマ（複数可）</p><div class="chips" id="quiz-themes" style="margin-bottom:14px;gap:6px"></div>
+  <p class="sec-lbl">難易度</p>
+  <div class="mode-row"><button class="mb" data-l="やさしい" onclick="setLevel(this)">🌱 やさしい</button><button class="mb on" data-l="ふつう" onclick="setLevel(this)">🫧 ふつう</button><button class="mb" data-l="くわしく" onclick="setLevel(this)">📖 くわしく</button></div>
+  <div class="stats-row"><div class="stat"><div class="stat-v" id="q-streak">3</div><div class="stat-l">連続日数</div></div><div class="stat"><div class="stat-v" id="q-acc">—</div><div class="stat-l">正解率</div></div><div class="stat"><div class="stat-v" id="q-done">0/0</div><div class="stat-l">今日の問題</div></div></div>
+  <button class="prim-btn" id="gen-btn" onclick="generateQuiz()" style="margin-bottom:14px">🫧 クイズを生成する</button>
+  <div class="loading" id="q-loading"><div class="bub-ani"><span></span><span></span><span></span></div><div class="load-t" id="q-load-t">論文からクイズを生成しています…</div></div>
+  <div class="card" id="q-card" style="display:none"><div><span class="cat-tag" id="q-cat"></span><span style="font-size:10px;color:#bbb;margin-left:6px" id="q-src"></span></div><div class="q-text" id="q-text"></div><div class="opts" id="q-opts"></div><div class="exp" id="q-exp"><div id="q-exp-text"></div><div class="exp-src" id="q-exp-src"></div></div><div class="r-msg" id="q-rmsg"></div></div>
+  <button class="sec-btn next-btn" id="q-next" onclick="generateQuiz()">次のクイズを生成する 🫧</button>
+</div></div>
+
+<!-- 記録（グラフなし） -->
+<div class="screen" id="s-record"><div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">今日の記録</div></div></div>
+  <div class="neg-bar"><div class="neg-lbl">今日のことば</div><div class="neg-txt" id="rec-neg"></div></div>
+
+  <!-- シャボン玉のみ（グラフなし） -->
+  <div class="milestone-card">
+    <div class="m-bubbles" id="m-bubbles"></div>
+    <div class="m-count" id="m-count">7</div>
+    <div class="m-label">血便なし 連続日数</div>
+    <div class="m-msg" id="m-msg"></div>
+  </div>
+
+  <div class="card">
+    <p class="sec-lbl">今日のおなかは？</p>
+    <div class="tummy-row"><button class="tummy-btn" onclick="setTummy('good',this)"><span class="ti">😌</span>おだやか</button><button class="tummy-btn warn" onclick="setTummy('warn',this)"><span class="ti">😟</span>少し気になる</button><button class="tummy-btn bad" onclick="setTummy('bad',this)"><span class="ti">😢</span>つらい</button></div>
+
+    <!-- おだやかの日の写真（シンプル） -->
+    <div id="good-photo-area" style="display:none;margin-top:12px">
+      <button class="photo-trigger" style="border-color:#C0DDD5;background:#F5FBFA" onclick="toggleGoodPhotoSheet()">
+        <span class="pt-icon">📷</span>
+        今日の様子を写真で残す（任意）
+        <span class="pt-sub">おだやかな日の記録として</span>
+      </button>
+      <div class="photo-sheet" id="good-photo-sheet">
+        <div class="photo-sheet-item" onclick="selectGoodPhoto('camera')">
+          <div class="psi-icon">📷</div>
+          <div class="psi-txt"><div class="psi-title">カメラで撮影する</div><div class="psi-desc">アプリ内に保存。カメラロールには残りません。</div></div>
+          <div style="font-size:14px;color:#ccc">›</div>
+        </div>
+        <div class="photo-sheet-item" onclick="selectGoodPhoto('library')">
+          <div class="psi-icon">🖼️</div>
+          <div class="psi-txt"><div class="psi-title">ライブラリから選ぶ</div><div class="psi-desc">選んだ写真はアプリ内に保存されます。</div></div>
+          <div style="font-size:14px;color:#ccc">›</div>
+        </div>
+      </div>
+      <div class="good-photo-saved" id="good-photo-saved" style="display:none;background:#E1F5EE;border-radius:10px;padding:10px 12px;font-size:12px;color:#085041;margin-top:8px">
+        🫧 写真を保存しました。おだやかな日の記録です。
+      </div>
+    </div>
+
+    <!-- 記録方法の選択（気になる・つらい選択時に表示） -->
+    <div class="detail-area" id="detail-area">
+      <p class="sec-lbl" style="margin-top:12px">症状の記録方法を選んでください</p>
+      <div class="rec-method-row">
+        <button class="rec-method-btn" onclick="setRecMethod('photo',this)">
+          <span class="rm-icon">📷</span>
+          <span class="rm-title">写真で記録する</span>
+          <span class="rm-desc">AIが自動で入力を手伝います</span>
+        </button>
+        <button class="rec-method-btn" onclick="setRecMethod('manual',this)">
+          <span class="rm-icon">✍️</span>
+          <span class="rm-title">手動で記録する</span>
+          <span class="rm-desc">タップで症状を選びます</span>
+        </button>
+        <button class="rec-method-btn" onclick="setRecMethod('skip',this)">
+          <span class="rm-icon">📝</span>
+          <span class="rm-title">記録しない</span>
+          <span class="rm-desc">今日はメモだけにする</span>
+        </button>
+      </div>
+
+      <!-- 写真モード -->
+      <div id="mode-photo" style="display:none;margin-top:12px">
+        <button class="photo-trigger" onclick="togglePhotoSheet()">
+          <span class="pt-icon">📷</span>
+          写真で記録する
+          <span class="pt-sub">タップして撮影 or ライブラリから選ぶ</span>
+        </button>
+        <div class="photo-sheet" id="photo-sheet">
+          <div class="photo-sheet-item" onclick="selectPhoto('camera')">
+            <div class="psi-icon">📷</div>
+            <div class="psi-txt"><div class="psi-title">カメラで今すぐ撮影する</div><div class="psi-desc">アプリ内に保存。カメラロールには残りません。</div></div>
+            <div style="font-size:14px;color:#ccc">›</div>
+          </div>
+          <div class="photo-sheet-item" onclick="selectPhoto('library')">
+            <div class="psi-icon">🖼️</div>
+            <div class="psi-txt"><div class="psi-title">ライブラリから選ぶ</div><div class="psi-desc">選んだ写真はアプリ内に保存されます。</div></div>
+            <div style="font-size:14px;color:#ccc">›</div>
+          </div>
+        </div>
+        <div class="privacy-notice" id="privacy-notice">🔒 写真はアプリ内のみに保存。カメラロールには残りません。</div>
+        <div class="photo-preview-area" id="photo-preview-area">
+          <div style="font-size:12px;color:#888;margin-bottom:8px">写真を保護フォルダに保存しました</div>
+          <div style="width:56px;height:56px;background:#E8E6E0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto">🫧</div>
+          <div style="font-size:11px;color:#bbb;margin-top:6px">カメラロールには保存されていません</div>
+          <button class="analyze-btn" id="analyze-btn" onclick="analyzePhoto()">🤖 AIで簡易記録を作成する</button>
+          <div class="loading" id="analyze-loading" style="padding:1rem"><div class="bub-ani"><span></span><span></span><span></span></div><div class="load-t">写真を分析しています…</div></div>
+          <div class="ai-suggest" id="ai-suggest"><div class="ai-suggest-lbl">AIの簡易判定（参考）</div><div class="ai-suggest-txt" id="ai-suggest-txt"></div><div class="disclaimer">⚠️ AIによる参考情報です。医療的な診断ではありません。必ず主治医にもご確認ください。</div></div>
+        </div>
+      </div>
+
+      <!-- 手動モード -->
+      <div id="mode-manual" style="display:none;margin-top:12px">
+        <div class="d-sec"><div class="d-lbl">血便は？</div><div class="chips" id="chips-blood" style="gap:6px"><button class="dchip" onclick="tDchip(this,'chips-blood')">なし</button><button class="dchip" onclick="tDchip(this,'chips-blood')">少し（筋状）</button><button class="dchip" onclick="tDchip(this,'chips-blood')">中程度</button><button class="dchip" onclick="tDchip(this,'chips-blood')">多い</button></div></div>
+        <div class="d-sec"><div class="d-lbl">色の印象</div><div class="chips" id="chips-color" style="gap:6px"><button class="dchip" onclick="tDchip(this,'chips-color')">鮮血（赤）</button><button class="dchip" onclick="tDchip(this,'chips-color')">暗赤色</button><button class="dchip" onclick="tDchip(this,'chips-color')">粘液混じり</button><button class="dchip" onclick="tDchip(this,'chips-color')">判断しにくい</button></div></div>
+        <div class="d-sec"><div class="d-lbl">下痢・軟便は？</div><div class="chips" id="chips-state" style="gap:6px"><button class="dchip" onclick="tDchip(this,'chips-state')">なし</button><button class="dchip" onclick="tDchip(this,'chips-state')">軟便</button><button class="dchip" onclick="tDchip(this,'chips-state')">下痢</button><button class="dchip" onclick="tDchip(this,'chips-state')">水様便</button></div></div>
+        <div class="d-sec"><div class="d-lbl">回数</div><div class="chips" id="chips-count" style="gap:6px"><button class="dchip" onclick="tDchip(this,'chips-count')">1〜2回</button><button class="dchip" onclick="tDchip(this,'chips-count')">3〜5回</button><button class="dchip" onclick="tDchip(this,'chips-count')">6回以上</button></div></div>
+        <div class="d-sec"><div class="d-lbl">腹痛</div><div class="chips" id="chips-pain" style="gap:6px"><button class="dchip" onclick="tDchip(this,'chips-pain')">なし</button><button class="dchip" onclick="tDchip(this,'chips-pain')">軽度</button><button class="dchip" onclick="tDchip(this,'chips-pain')">強い</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><p class="sec-lbl">今日の気持ちは？</p><div class="emoji-row"><button class="emoji-btn" onclick="setEmoji(this)">😢</button><button class="emoji-btn" onclick="setEmoji(this)">😟</button><button class="emoji-btn" onclick="setEmoji(this)">😐</button><button class="emoji-btn" onclick="setEmoji(this)">🙂</button><button class="emoji-btn" onclick="setEmoji(this)">😊</button></div></div>
+  <div class="card"><p class="sec-lbl">今日の薬</p><input type="text" class="rec-input" id="rec-med" placeholder="例：メサラジン服用、レミケード投与日"></div>
+  <div class="card"><p class="sec-lbl">メモ（自由に）</p><textarea class="rec-input" id="rec-memo" placeholder="気になったこと、気持ち、なんでも…"></textarea></div>
+  <button class="prim-btn" onclick="saveRecord()">記録を保存する</button>
+  <div class="saved-card" id="saved-card"><div style="font-size:28px;margin-bottom:8px" id="saved-icon">🫧</div><div class="saved-title" id="saved-title"></div><div class="saved-msg" id="saved-msg"></div></div>
+  <button class="sec-btn" id="doctor-btn" onclick="showDoctor()" style="display:none">📋 医師に見せるデータを表示</button>
+  <div class="doctor-card" id="doctor-card"><div class="doctor-title">📋 医師に見せるデータ</div><div class="doctor-content" id="doctor-content"></div><button class="sec-btn" onclick="document.getElementById('doctor-card').className='doctor-card'">閉じる</button></div>
+</div></div>
+
+<!-- 振り返る（グラフ独立） -->
+<div class="screen" id="s-review"><div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">振り返る</div></div></div>
+
+  <div class="neg-bar">
+    <div class="neg-lbl">振り返りのことば</div>
+    <div class="neg-txt">あの頃より、少しずつ前に進んでいます。<br><span style="font-size:10px;color:#bbb;display:block;margin-top:4px;">— 長い目で見てみましょう</span></div>
+  </div>
+
+  <p class="sec-lbl">期間を選ぶ</p>
+  <div class="period-row">
+    <button class="period-btn" onclick="setPeriod(7,this)">7日</button>
+    <button class="period-btn on" onclick="setPeriod(30,this)">1か月</button>
+    <button class="period-btn" onclick="setPeriod(90,this)">3か月</button>
+    <button class="period-btn" onclick="setPeriod(180,this)">半年</button>
+  </div>
+
+  <div class="card">
+    <p class="sec-lbl" id="graph-title">おなかの様子（1か月）</p>
+    <div class="graph-wrap" id="review-graph"></div>
+    <div style="display:flex;gap:12px;margin-top:10px">
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#5DCAA5;border-radius:2px"></div><div style="font-size:11px;color:#aaa">おだやか</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#F0D090;border-radius:2px"></div><div style="font-size:11px;color:#aaa">少し気になる</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#E8C0C0;border-radius:2px"></div><div style="font-size:11px;color:#aaa">つらい</div></div>
+    </div>
+  </div>
+
+  <div class="period-summary" id="period-summary"></div>
+
+  <!-- カレンダー表示 -->
+  <div class="card" id="cal-card">
+    <p class="sec-lbl" id="cal-title">日別カレンダー</p>
+    <div class="cal-header">
+      <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#E1F5EE;border-radius:3px"></div><div style="font-size:10px;color:#aaa">おだやか</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#FEF3E2;border-radius:3px"></div><div style="font-size:10px;color:#aaa">少し気になる</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;background:#FBEAF0;border-radius:3px"></div><div style="font-size:10px;color:#aaa">つらい</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px">📷</span><div style="font-size:10px;color:#aaa">写真あり</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px">☺</span><div style="font-size:10px;color:#aaa">記録なし</div></div>
+    </div>
+  </div>
+
+  <!-- 写真タイムライン -->
+  <div class="card" id="photo-timeline-card" style="display:none">
+    <p class="sec-lbl">写真の記録</p>
+    <div class="photo-timeline" id="photo-timeline"></div>
+  </div>
+
+  <div id="trend-messages"></div>
+
+  <button class="sec-btn" onclick="go('s-record')" style="margin-top:4px">✏️ 今日の記録をつける</button>
+  <button class="sec-btn" onclick="showReviewDoctor()" style="margin-top:8px">📋 この記録を医師に見せる</button>
+  <div class="doctor-card" id="review-doctor-card"><div class="doctor-title">📋 医師に見せるデータ</div><div class="doctor-content" id="review-doctor-content"></div><button class="sec-btn" onclick="document.getElementById('review-doctor-card').className='doctor-card'">閉じる</button></div>
+</div></div>
+
+<!-- つながる -->
+<div class="screen" id="s-connect">
+<div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">つながる</div></div></div>
+  <div class="neg-bar"><div class="neg-lbl">今日のことば</div><div class="neg-txt" id="connect-neg"></div></div>
+
+  <!-- モード切替 -->
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="mb on" id="conn-watch-btn" onclick="setConnMode('watch')"><span style="font-size:18px;display:block;margin-bottom:3px">🫧</span>眺める<span style="font-size:10px;display:block;opacity:.7">ただ、ここにいる</span></button>
+    <button class="mb" id="conn-post-btn" onclick="setConnMode('post')"><span style="font-size:18px;display:block;margin-bottom:3px">✍️</span>つぶやく<span style="font-size:10px;display:block;opacity:.7">気持ちを流す</span></button>
+  </div>
+
+  <!-- 眺めるモード -->
+  <div id="conn-watch">
+    <p class="sec-lbl">フィルター</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="chip on" id="cf-all" onclick="setConnFilter('all',this)">すべて</button>
+      <button class="chip" id="cf-acute" onclick="setConnFilter('acute',this)">急性期・入院中</button>
+      <button class="chip" id="cf-maintain" onclick="setConnFilter('maintain',this)">治療継続中</button>
+      <button class="chip" id="cf-remission" onclick="setConnFilter('remission',this)">寛解中</button>
+    </div>
+    <div id="conn-stream"></div>
+  </div>
+
+  <!-- つぶやくモード -->
+  <div id="conn-post" style="display:none">
+    <div style="background:#FEF3E2;border:1px solid #F0D090;border-radius:12px;padding:12px 14px;font-size:12px;color:#7A4A00;line-height:1.7;margin-bottom:14px">⚠️ 個人が特定される情報・他者への攻撃・商品の宣伝は投稿できません。投稿前にAIが確認します。</div>
+    <div class="card">
+      <p class="sec-lbl">今の状況</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px" id="conn-stage-chips">
+        <button class="chip" onclick="setConnStage('acute',this)">急性期・入院中</button>
+        <button class="chip" onclick="setConnStage('maintain',this)">治療継続中</button>
+        <button class="chip" onclick="setConnStage('remission',this)">寛解中</button>
+        <button class="chip" onclick="setConnStage('family',this)">家族として</button>
+      </div>
+      <textarea class="rec-input" id="conn-input" placeholder="今の気持ちを、ここに流してください。名前は表示されません。" maxlength="200" oninput="connUpdateCount()" style="height:100px"></textarea>
+      <div style="font-size:11px;color:#bbb;text-align:right;margin-top:4px;margin-bottom:10px"><span id="conn-char">0</span> / 200</div>
+      <div style="background:#F5F3EE;border-radius:10px;padding:10px 14px;font-size:12px;color:#888;line-height:1.6;margin-bottom:12px">🔒 投稿は完全匿名です。アカウント登録不要。</div>
+      <button class="prim-btn" id="conn-submit" onclick="connSubmit()" disabled>🫧 流す</button>
+    </div>
+    <div id="conn-check-result"></div>
+    <div style="background:#E1F5EE;border:1px solid #5DCAA5;border-radius:14px;padding:16px;text-align:center;display:none;margin-bottom:14px" id="conn-posted">
+      <div style="font-size:24px;margin-bottom:6px">🫧</div>
+      <div style="font-size:13px;color:#085041;line-height:1.7">ふわりと、流れていきました。<br>誰かのもとに、とどくかもしれません。</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 概要 -->
+<div class="screen" id="s-about"><div style="width:100%;max-width:390px">
+  <div class="row-hdr"><div class="back-btn" onclick="go('s-top')">←</div><div><div class="brow"><div class="bub" style="width:5px;height:5px;opacity:.4"></div><div class="bub" style="width:9px;height:9px;opacity:.65"></div><div class="bub" style="width:13px;height:13px;opacity:.9"></div></div><div class="pg-title">このアプリについて</div></div></div>
+  <div class="card">
+    <div class="about-sec"><div class="about-title">ふわりととどく とは</div><div class="about-text">IBD（炎症性腸疾患）と生きる子どもたちと、その家族のために作られたアプリです。病気のことを調べたい、誰かの声を聞きたい、今日のことを記録したい。そんな気持ちに、ふわりと寄り添います。</div></div>
+    <div class="about-sec"><div class="about-title">5つのメニュー</div><div class="about-text">📖 ブログを読む — 当事者・親御さんのリアルな声を検索<br>💡 学ぶ — AIが毎回違うクイズを生成<br>✏️ 記録する — 症状・写真・気持ちをメモ<br>📈 振り返る — 自分のペースで長い目で見る<br>ℹ️ このアプリについて — 今ここです</div></div>
+    <div class="about-sec"><div class="about-title">写真について</div><div class="about-text">記録した写真はアプリ内のみに保存されます。カメラロールには残りません。AIによる簡易判定は参考情報であり、医療的診断ではありません。必ず主治医にご確認ください。</div></div>
+    <div class="about-sec"><div class="about-title">ブログのフィルタリング</div><div class="about-text">掲載ブログはAIによる審査を通過したものだけです。商品誘導・マルチ勧誘・読む人が傷つく内容は除外しています。</div></div>
+    <div class="about-sec"><div class="about-title">対応言語</div><div class="about-text">日本語・English・Español・Deutsch<br>海外のブログは日本語に翻訳して読めます。</div></div>
+    <div class="about-sec"><div class="about-title">つくった人</div><div class="about-text">超早発型IBD（VEO-IBD）の娘を持つ家族が、自分たちの体験をもとに開発しています。病院の庭から昼にシャボン玉を飛ばしたように——すべての子どもたちに、ふわりととどきますように。🫧</div></div>
+  </div>
+</div></div>
+
+<input type="file" id="file-camera" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+<input type="file" id="file-camera-good" accept="image/*" capture="environment" onchange="handleGoodPhoto(this)">
+<input type="file" id="file-library-good" accept="image/*" onchange="handleGoodPhoto(this)">
+<input type="file" id="file-library" accept="image/*" onchange="handlePhoto(this)">
+
+<script>
+if('serviceWorker' in navigator) window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+if(isIOS&&!isStandalone){document.getElementById('install-banner').style.display='flex';}
+
+// オンボーディング：初回起動チェック
+function checkOnboarding(){
+  try{
+    var done=localStorage.getItem('fuwari_onboarded');
+    if(!done){ go('s-onboard'); }
+  }catch(e){}
+}
+setTimeout(checkOnboarding, 100);
+
+var MSGS=[
+  {text:"今日も、そばにいてくれてありがとう。\nあなたがいるから、この子は安心できる。",to:"— 付き添い入院の親御さんへ"},
+  {text:"痛い日も、しんどい日も、\nあなたはちゃんとここにいる。",to:"— 闘病中のお子さんへ"},
+  {text:"治療を続けていること、\nそれだけで、十分すごいことです。",to:"— 寛解を維持している方へ"},
+  {text:"記録することは、この子を守ることです。\nありがとうございます。",to:"— 記録を続けている親御さんへ"},
+  {text:"今日も、よくがんばったね。",to:"— 闘病中のお子さんへ"},
+  {text:"ふわりと、とどいていますか。\nここに、あなたの場所があります。",to:"— このアプリを開いてくれたあなたへ"},
+  {text:"隣にいること、それがすべてです。",to:"— 付き添いの親御さんへ"}
+];
+function negHTML(m){return m.text.replace(/\n/g,"<br>")+'<br><span style="font-size:10px;color:#bbb;display:block;margin-top:4px;">'+m.to+"</span>";}
+var neg=MSGS[Math.floor(Math.random()*MSGS.length)];
+["top-neg","search-neg","quiz-neg","rec-neg"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=negHTML(neg);});
+
+// ===== オンボーディング =====
+var obCurrent = 0;
+var obTotal = 6;
+var obSit = null;
+
+function obInitDots(){
+  var el = document.getElementById('ob-dots');
+  if(!el) return;
+  el.innerHTML = '';
+  for(var i=0;i<obTotal;i++){
+    var d = document.createElement('div');
+    d.style.cssText = 'width:'+(i===0?'18px':'6px')+';height:6px;border-radius:99px;background:'+(i===0?'#5DCAA5':'#D8D6D0')+';transition:all .3s';
+    d.id = 'ob-dot-'+i;
+    el.appendChild(d);
+  }
+}
+
+function obUpdateDots(){
+  for(var i=0;i<obTotal;i++){
+    var d = document.getElementById('ob-dot-'+i);
+    if(!d) continue;
+    d.style.width = i===obCurrent?'18px':'6px';
+    d.style.background = i===obCurrent?'#5DCAA5':'#D8D6D0';
+  }
+}
+
+function obUpdateBtn(){
+  var btn = document.getElementById('ob-next-btn');
+  if(!btn) return;
+  if(obCurrent===0) btn.textContent='はじめる';
+  else if(obCurrent===obTotal-1) btn.textContent='アプリを開く ›';
+  else btn.textContent='次へ';
+  var skip = document.getElementById('ob-skip');
+  if(skip) skip.style.display = obCurrent===obTotal-1?'none':'block';
+}
+
+function obNext(){
+  if(obCurrent===obTotal-1){ obFinish(); return; }
+  document.getElementById('obs-'+obCurrent).classList.remove('active');
+  obCurrent++;
+  document.getElementById('obs-'+obCurrent).classList.add('active');
+  obUpdateDots(); obUpdateBtn();
+}
+
+function obSelectSit(sit, btn){
+  obSit = sit;
+  document.querySelectorAll('.ob-sit-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  setTimeout(function(){ obNext(); }, 500);
+}
+
+function obFinish(){
+  try{
+    localStorage.setItem('fuwari_onboarded','1');
+    if(obSit) localStorage.setItem('fuwari_situation', obSit);
+  }catch(e){}
+  go('s-top');
+}
+
+setTimeout(function(){ obInitDots(); obUpdateBtn(); }, 200);
+
+function go(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});document.getElementById(id).classList.add("active");window.scrollTo(0,0);}
+function toggleLang(){document.getElementById("lang-panel").classList.toggle("open");}
+function setLang(l,el){document.querySelectorAll(".lang-opt").forEach(function(o){o.classList.remove("chosen");});el.classList.add("chosen");document.getElementById("lang-toggle").textContent="🌐 "+l;document.getElementById("lang-panel").classList.remove("open");}
+document.addEventListener("click",function(e){if(!e.target.closest(".lang-btn")&&!e.target.closest(".lang-panel")){var p=document.getElementById("lang-panel");if(p)p.classList.remove("open");}});
+
+// ブログデータ
+var PD={"診断前":["血便","アレルギーとの違い","誤診","何科に行く？","腹痛が続く"],"確定診断":["IBDとは","潰瘍性大腸炎","VEO-IBD","内視鏡検査","確定診断"],"急性期・入院":["付き添い入院","レミケード","ステロイド","副作用","高額療養費"],"家族の葛藤":["父親の気持ち","祖父母に伝える","きょうだいの不安","遠くから心配"],"気持ち・感情":["不安","孤独","罪悪感","受け入れること","希望"],"よろこび":["寛解した日","退院の朝","初めて食べられたもの","学校に戻れた"],"寛解・維持":["維持療法","内視鏡","食事の広がり","将来への不安"]};
+var ALL_BLOGS=[
+  {id:1,title:"血便を発見した昼のこと",url:"https://ameblo.jp/sample/001",meta:"IBDっ子の母・日本語・2024年3月",desc:"最初に血便を見たときの混乱と、小児科に連れていくか迷ったことを正直に書きました。",tags:["血便","診断前"],lang:"日本語",text:"娘の血便を最初に見たのは昼頃でした。本当に怖くて。かかりつけ医に連れて行きましたが、アレルギーかもしれないと言われました。同じ思いをしている親御さんに少しでも参考になればと思って書いています。"},
+  {id:2,title:"アレルギーと言われ続けた8か月",url:"https://note.com/sample/001",meta:"てのひら日記・日本語・2023年11月",desc:"かかりつけ医にアレルギーと言われ続け、やっとIBDとわかるまでの記録です。",tags:["誤診","確定診断"],lang:"日本語",text:"8か月間、ずっとアレルギーと言われ続けました。でも症状は改善しなかった。やっと専門医を紹介してもらってIBDとわかりました。"},
+  {id:3,title:"レミケード初回投与の記録",url:"https://ameblo.jp/sample/003",meta:"てのひら日記・日本語・2023年8月",desc:"生物学的製剤を始めることへの不安と、投与後の変化をリアルに記録しました。",tags:["レミケード","急性期・入院"],lang:"日本語",text:"レミケードを始めることになりました。怖かったです。でも主治医と何度も話し合って決めました。"},
+  {id:4,title:"付き添えなかった父親の話",url:"https://note.com/sample/004",meta:"IBD父ちゃんの記録・日本語・2023年6月",desc:"数か月の入院中、付き添えず病院の庭から昼にシャボン玉を飛ばしていた話。",tags:["父親の気持ち","家族の葛藤"],lang:"日本語",text:"入院中、私は付き添いができませんでした。病院の庭から昼にシャボン玉を飛ばして、娘とテレビ電話で話すことだけが私にできることでした。"},
+  {id:5,title:"漢方を補助的に試してみた話",url:"https://ameblo.jp/sample/005",meta:"IBDっ子の母・日本語・2024年1月",desc:"主治医と相談しながら漢方を取り入れた体験談。断定はしていません。",tags:["気持ち・感情","寛解・維持"],lang:"日本語",text:"主治医に相談したうえで、補助的に漢方を試してみました。医学的なエビデンスがあるとは思っていません。"},
+  {id:6,title:"Our daughter's first remission",url:"https://ibdfamily.blog/remission",meta:"IBD Family Blog・English・2024年2月",desc:"The day her inflammation markers finally normalized — what we felt as a family.",tags:["よろこび","寛解した日"],lang:"English",trans:true,text:"The call came on a Tuesday afternoon. Her CRP was finally normal. We cried together as a family."},
+  {id:7,title:"Unser Weg zur Remission",url:"https://ibdfamilie.de/remission",meta:"IBD Familie・Deutsch・2024年3月",desc:"Wie wir nach zwei Jahren Kampf endlich zur Remission gefunden haben.",tags:["よろこび","寛解・維持"],lang:"Deutsch",trans:true,text:"Nach zwei Jahren intensiver Behandlung hat unsere Tochter endlich Remission erreicht."},
+  {id:8,title:"祖父母にIBDを伝えた日",url:"https://note.com/sample/008",meta:"IBDっ子の母・日本語・2024年4月",desc:"心配させたくなくてなかなか言えなかった。やっと話せた日のことを書きました。",tags:["祖父母に伝える","家族の葛藤"],lang:"日本語",text:"半年間、祖父母には黙っていました。でもやっと話すことにしました。"},
+  {id:9,title:"食事の幅が少しずつ広がった3年間",url:"https://ameblo.jp/sample/009",meta:"てのひら日記・日本語・2024年2月",desc:"食が広がらない娘に、管理栄養士に教わったアプローチを記録しています。",tags:["食事の広がり","寛解・維持"],lang:"日本語",text:"食事がなかなか広がりません。管理栄養士さんに相談しながら、少しずつ試しています。"},
+  {id:10,title:"高額療養費制度を使い倒した話",url:"https://note.com/sample/010",meta:"IBD家計管理・日本語・2024年3月",desc:"生物学的製剤の費用、個室代、実際に申請した制度と助かった金額を公開します。",tags:["高額療養費","急性期・入院"],lang:"日本語",text:"高額療養費制度を使うと自己負担に上限ができます。実際に申請できたかを公開します。"}
+];
+var aPhase=null;var aLang={"日本語":true,"English":true,"Español":false,"Deutsch":false};
+var pe=document.getElementById("phases");
+Object.keys(PD).forEach(function(p){var b=document.createElement("button");b.className="chip";b.textContent=p;b.onclick=function(){selectPhase(p,b);};pe.appendChild(b);});
+var le=document.getElementById("blog-langs");
+Object.keys(aLang).forEach(function(l){var c=document.createElement("span");c.className="lchip"+(aLang[l]?" on":"");c.textContent=l;c.onclick=function(){aLang[l]=!aLang[l];c.classList.toggle("on");};le.appendChild(c);});
+function selectPhase(p,btn){if(aPhase===p){aPhase=null;document.querySelectorAll("#phases .chip").forEach(function(b){b.classList.remove("on");});renderFloats([]);return;}aPhase=p;document.querySelectorAll("#phases .chip").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");renderFloats(PD[p]);}
+function renderFloats(kws){var e=document.getElementById("floats");e.innerHTML="";if(!kws.length){e.innerHTML='<span class="fhint">フェーズを選ぶとキーワードが浮かびます</span>';return;}kws.forEach(function(k){var s=document.createElement("span");s.className="kw";s.textContent=k;s.onclick=function(){document.getElementById("search-input").value=k;};e.appendChild(s);});}
+function buildFP(blog){return "あなたは「ふわりととどく」のコンテンツフィルタリングAIです。以下の基準でブログを評価してください。\n\n【掲載不可（ng）】\n・商品購入誘導・アフィリエイト\n・マルチ商法・ネットワークビジネス勧誘\n・「病院はいらない」などの断定的な危険情報\n・読んでいる人が傷つく内容\n\n【要確認（warn）】\n・断定的な表現が混じる体験談\n\n【掲載可（ok）】\n・誠実な体験談（断定していない）\n・医療との協調が見られる\n\n以下のJSONのみで返してください：\n{\"verdict\":\"ok|warn|ng\",\"score\":0-100,\"reason\":\"30字以内\"}\n\n【ブログ本文】\n"+blog.text;}
+async function startSearch(){
+  var q=document.getElementById("search-input").value.trim();
+  var ol=Object.keys(aLang).filter(function(l){return aLang[l];});
+  var candidates=ALL_BLOGS.filter(function(b){var mq=!q||b.title.includes(q)||b.desc.includes(q)||b.tags.some(function(t){return t.includes(q);});var mp=!aPhase||b.tags.some(function(t){return PD[aPhase]&&PD[aPhase].includes(t)||t===aPhase;});var ml=!ol.length||ol.includes(b.lang);return mq&&mp&&ml;});
+  if(!candidates.length){document.getElementById("result-area").innerHTML='<div class="empty">該当するブログが見つかりませんでした</div>';return;}
+  var btn=document.getElementById("search-btn");btn.disabled=true;
+  document.getElementById("result-area").innerHTML="";
+  document.getElementById("prog-wrap").className="prog-wrap show";
+  document.getElementById("fstatus").innerHTML="";
+  document.getElementById("prog-bar").style.width="0%";
+  document.getElementById("prog-cnt").textContent="0/"+candidates.length;
+  var passed=[];var statusEl=document.getElementById("fstatus");
+  for(var i=0;i<candidates.length;i++){
+    var blog=candidates[i];
+    var itemEl=document.createElement("div");itemEl.className="fitem";
+    itemEl.innerHTML='<div class="fdot checking"></div><div>「'+blog.title+'」を確認中…</div>';
+    statusEl.appendChild(itemEl);statusEl.scrollTop=statusEl.scrollHeight;
+    try{
+      var res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:200,messages:[{role:"user",content:buildFP(blog)}]})});
+      var data=await res.json();var raw=data.content&&data.content[0]&&data.content[0].text;
+      var jm=raw&&raw.match(/\{[\s\S]*?\}/);var result=jm?JSON.parse(jm[0]):{verdict:"warn",score:50,reason:"判定できませんでした"};
+      var dot=itemEl.querySelector(".fdot");var lbl=itemEl.querySelector("div:last-child");
+      dot.className="fdot "+result.verdict;
+      if(result.verdict==="ok"){lbl.textContent="✅ 「"+blog.title+"」— "+result.reason;passed.push({blog:blog,score:result.score});}
+      else if(result.verdict==="warn"){lbl.textContent="⚠️ 「"+blog.title+"」— "+result.reason+"（除外）";}
+      else{lbl.textContent="❌ 「"+blog.title+"」— "+result.reason+"（除外）";}
+    }catch(e){itemEl.querySelector(".fdot").className="fdot warn";itemEl.querySelector("div:last-child").textContent="⚠️ 「"+blog.title+"」— 判定エラー（除外）";}
+    var pct=Math.round((i+1)/candidates.length*100);
+    document.getElementById("prog-bar").style.width=pct+"%";
+    document.getElementById("prog-cnt").textContent=(i+1)+"/"+candidates.length;
+  }
+  setTimeout(function(){document.getElementById("prog-wrap").className="prog-wrap";btn.disabled=false;renderResults(passed,candidates.length);},600);
+}
+function renderResults(passed,total){
+  var lc={"English":"en","Deutsch":"de","Español":"es"};
+  var el=document.getElementById("result-area");
+  if(!passed.length){el.innerHTML='<div class="res-hdr"><div class="res-cnt">掲載可のブログが見つかりませんでした</div></div><div class="empty">検索条件を変えてみてください</div>';return;}
+  passed.sort(function(a,b){return b.score-a.score;});
+  var html='<div class="res-hdr"><div class="res-cnt"><span>'+passed.length+' 件</span>（'+total+' 件中）</div><div class="f-badge">🫧 AIフィルタリング済み</div></div>';
+  html+=passed.map(function(item,idx){var b=item.blog;var lclass=lc[b.lang]||"";var tr=b.trans?'<span class="trans-b">日本語訳あり</span>':"";var transBtn=b.lang!=='日本語'?'<button onclick="doTranslate(\"blog'+idx+'\",\"'+b.lang+'\",\"'+b.text.replace(/\"/g,'')+'\")" style="font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid #C0DDD5;background:#fff;color:#085041;cursor:pointer;font-family:inherit;margin-top:8px" id="tbtn-blog'+idx+'">🌐 日本語に翻訳する</button><div id="tres-blog'+idx+'" style="display:none"></div>':'';return '<div class="rcard"><a href="'+b.url+'" target="_blank" rel="noopener" style="text-decoration:none;display:block"><div class="rcard-top"><div class="rtitle">'+b.title+tr+'</div><div class="score-pill">信頼度 '+item.score+'</div></div><div class="rmeta">'+b.meta+'</div><div class="rdesc">'+b.desc+'</div><div class="rtags">'+b.tags.map(function(t){return'<span class="rtag p">'+t+'</span>';}).join("")+(lclass?'<span class="rtag '+lclass+'">'+b.lang+'</span>':"")+'</div></a>'+transBtn+'</div>';}).join("");
+  el.innerHTML=html;
+}
+
+// クイズ
+var THEMES=["IBD基礎","生物学的製剤","小児・VEO-IBD","食事・栄養","心理・QOL","制度・支援","最新論文"];
+var activeThemes={"IBD基礎":true};var activeLevel="ふつう";var qTotal=0;var qCorrect=0;
+var qt=document.getElementById("quiz-themes");
+THEMES.forEach(function(t){var b=document.createElement("button");b.className="chip"+(activeThemes[t]?" on":"");b.textContent=t;b.onclick=function(){activeThemes[t]=!activeThemes[t];b.classList.toggle("on");};qt.appendChild(b);});
+function setLevel(btn){document.querySelectorAll(".mb").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");activeLevel=btn.dataset.l;}
+var qLMs=["論文からクイズを生成しています…","IBD関連の研究を読み込んでいます…","問題と選択肢を組み立てています…","もうすぐです🫧"];
+var qLI=0;var qLT=null;
+function startQL(){qLI=0;document.getElementById("q-load-t").textContent=qLMs[0];qLT=setInterval(function(){qLI=(qLI+1)%qLMs.length;document.getElementById("q-load-t").textContent=qLMs[qLI];},1800);}
+function stopQL(){if(qLT){clearInterval(qLT);qLT=null;}}
+async function generateQuiz(){
+  var themes=Object.keys(activeThemes).filter(function(t){return activeThemes[t];});
+  if(!themes.length){alert("テーマを1つ以上選んでください");return;}
+  var btn=document.getElementById("gen-btn");btn.disabled=true;
+  document.getElementById("q-loading").className="loading show";
+  document.getElementById("q-card").style.display="none";
+  document.getElementById("q-next").className="next-btn";
+  startQL();
+  var prompt="あなたはIBD（炎症性腸疾患）の専門家です。以下の条件でクイズを1問だけ生成してください。\nテーマ："+themes.join("、")+"\n難易度："+activeLevel+"\n対象：IBD患者の親御さん、または患者本人（子ども〜青年）\n\n以下のJSON形式のみで返してください：\n{\"category\":\"カテゴリ名\",\"question\":\"問題文\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"解説（200字程度）\",\"source\":\"出典（論文名・雑誌名・年）\"}";
+  try{
+    var res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+    var data=await res.json();var text=data.content&&data.content[0]&&data.content[0].text;
+    if(!text)throw new Error("レスポンスが空");
+    var jm=text.match(/\{[\s\S]*\}/);if(!jm)throw new Error("JSON形式エラー");
+    var q=JSON.parse(jm[0]);stopQL();document.getElementById("q-loading").className="loading";renderQuiz(q);
+  }catch(e){stopQL();document.getElementById("q-loading").className="loading";btn.disabled=false;alert("生成に失敗しました："+e.message);}
+}
+function renderQuiz(q){
+  document.getElementById("q-cat").textContent=q.category||"IBD";
+  document.getElementById("q-src").textContent=q.source?"📄 "+q.source:"";
+  document.getElementById("q-text").textContent=q.question;
+  document.getElementById("q-exp").className="exp";document.getElementById("q-rmsg").textContent="";
+  var opts=document.getElementById("q-opts");opts.innerHTML="";
+  (q.options||[]).forEach(function(o,i){var b=document.createElement("button");b.className="opt";b.textContent=o;b.onclick=function(){selectQ(i,q);};opts.appendChild(b);});
+  document.getElementById("q-card").style.display="block";document.getElementById("gen-btn").disabled=false;
+  qTotal++;document.getElementById("q-done").textContent=qCorrect+"/"+qTotal;
+}
+function selectQ(i,q){
+  document.querySelectorAll(".opt").forEach(function(b){b.disabled=true;});
+  document.querySelectorAll(".opt").forEach(function(b,idx){if(idx===q.answer)b.classList.add("correct");else if(idx===i&&i!==q.answer)b.classList.add("wrong");});
+  var ok=i===q.answer;if(ok)qCorrect++;
+  document.getElementById("q-rmsg").textContent=ok?"正解！":"不正解… 正解は「"+q.options[q.answer]+"」です";
+  document.getElementById("q-rmsg").className="r-msg "+(ok?"ok":"ng");
+  document.getElementById("q-exp-text").textContent=q.explanation||"";
+  document.getElementById("q-exp-src").textContent=q.source?"📄 出典："+q.source:"";
+  document.getElementById("q-exp").className="exp show";
+  document.getElementById("q-next").className="next-btn show";
+  document.getElementById("q-acc").textContent=Math.round(qCorrect/qTotal*100)+"%";
+  document.getElementById("q-done").textContent=qCorrect+"/"+qTotal;
+}
+
+// 記録
+var streak=7;var tummyState=null;var photoImgData=null;
+function renderMilestone(n){
+  var el=document.getElementById("m-bubbles");el.innerHTML="";
+  var sizes=[10,14,18,12,16,10,14,18,12,16];
+  for(var i=0;i<Math.min(n,10);i++){var d=document.createElement("div");d.className="mbub";var s=sizes[i%sizes.length];d.style.cssText="width:"+s+"px;height:"+s+"px;animation-delay:"+(i*0.05)+"s;opacity:"+(0.4+(i/10)*0.6);el.appendChild(d);}
+  document.getElementById("m-count").textContent=n;
+  var msgs=["","はじめの一歩🫧","2日連続！","3日続いています🌱","4日！","5日！いい調子","6日連続✨","1週間！すごい🎉","8日目！","9日！もうすぐ10日","10日連続！🫧🫧🫧"];
+  document.getElementById("m-msg").textContent=n>=10?"すばらしい記録です🫧":(msgs[n]||n+"日連続！");
+}
+renderMilestone(streak);
+// ストレージから復元
+setTimeout(function(){ initFromStorage(); }, 100);
+function setTummy(state,btn){
+  tummyState=state;
+  document.querySelectorAll(".tummy-btn").forEach(function(b){b.classList.remove("on");});
+  btn.classList.add("on");
+  document.getElementById("detail-area").className=state==="good"?"detail-area":"detail-area show";
+  document.getElementById("good-photo-area").style.display=state==="good"?"block":"none";
+  if(state==="good"){
+    document.getElementById("good-photo-sheet").className="photo-sheet";
+    document.getElementById("good-photo-saved").style.display="none";
+  }
+}
+function tDchip(btn,group){document.getElementById(group).querySelectorAll(".dchip").forEach(function(c){c.classList.remove("on","suggested");});btn.classList.add("on");}
+function setRecMethod(type,btn){
+  document.querySelectorAll(".rec-method-btn").forEach(function(b){b.classList.remove("on");});
+  btn.classList.add("on");
+  document.getElementById("mode-photo").style.display="none";
+  document.getElementById("mode-manual").style.display="none";
+  if(type==="photo") document.getElementById("mode-photo").style.display="block";
+  else if(type==="manual") document.getElementById("mode-manual").style.display="block";
+}
+function toggleGoodPhotoSheet(){
+  var sheet=document.getElementById("good-photo-sheet");
+  sheet.className=sheet.className==="photo-sheet show"?"photo-sheet":"photo-sheet show";
+}
+function selectGoodPhoto(type){
+  document.getElementById("good-photo-sheet").className="photo-sheet";
+  if(type==="camera") document.getElementById("file-camera-good").click();
+  else document.getElementById("file-library-good").click();
+}
+function handleGoodPhoto(input){
+  if(!input.files||!input.files[0]) return;
+  document.getElementById("good-photo-saved").style.display="block";
+  document.getElementById("doctor-btn").style.display="block";
+  input.value="";
+}
+function togglePhotoSheet(){
+  var sheet=document.getElementById("photo-sheet");
+  sheet.className=sheet.className==="photo-sheet show"?"photo-sheet":"photo-sheet show";
+}
+function selectPhoto(type){
+  document.getElementById("photo-sheet").className="photo-sheet";
+  var pn=document.getElementById("privacy-notice");var pp=document.getElementById("photo-preview-area");
+  if(type==="camera"){pn.className="privacy-notice show";document.getElementById("file-camera").click();}
+  else if(type==="library"){pn.className="privacy-notice show";document.getElementById("file-library").click();}
+}
+function skipPhoto(){
+  document.getElementById("photo-sheet").className="photo-sheet";
+  document.getElementById("privacy-notice").className="privacy-notice";
+  document.getElementById("photo-preview-area").className="photo-preview-area";
+  photoImgData=null;document.getElementById("doctor-btn").style.display="none";
+}
+function handlePhoto(input){
+  if(!input.files||!input.files[0])return;
+  var reader=new FileReader();
+  reader.onload=function(e){photoImgData=e.target.result.split(",")[1];document.getElementById("photo-preview-area").className="photo-preview-area show";document.getElementById("analyze-btn").disabled=false;document.getElementById("doctor-btn").style.display="block";};
+  reader.readAsDataURL(input.files[0]);input.value="";
+}
+async function analyzePhoto(){
+  if(!photoImgData)return;
+  var btn=document.getElementById("analyze-btn");btn.disabled=true;
+  document.getElementById("analyze-loading").className="loading show";
+  document.getElementById("ai-suggest").className="ai-suggest";
+  var prompt="あなたは「ふわりととどく」の記録補助AIです。添付画像はIBD患者の排泄物の写真です。記録入力補助として以下を判定してください。断定せず「〜のように見えます」という形にしてください。\n\n以下のJSONのみで返してください：\n{\"blood\":\"なし|少し（筋状）|中程度|多い\",\"color\":\"鮮血（赤）|暗赤色|粘液混じり|判断しにくい\",\"state\":\"普通便|軟便|下痢|水様便\",\"comment\":\"親御さんへの優しいコメント（50字程度）。断定せず参考として伝える。\"}";
+  try{
+    var res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:500,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:photoImgData}},{type:"text",text:prompt}]}]})});
+    var data=await res.json();var raw=data.content&&data.content[0]&&data.content[0].text;
+    var jm=raw&&raw.match(/\{[\s\S]*?\}/);var result=jm?JSON.parse(jm[0]):null;
+    document.getElementById("analyze-loading").className="loading";
+    if(result){setSugChip("chips-blood",result.blood);setSugChip("chips-color",result.color);setSugChip("chips-state",result.state);document.getElementById("mode-manual").style.display="block";document.getElementById("ai-suggest-txt").textContent=result.comment||"写真から簡易的に判定しました。内容を確認のうえ修正してください。";document.getElementById("ai-suggest").className="ai-suggest show";}
+  }catch(e){document.getElementById("analyze-loading").className="loading";}
+  btn.disabled=false;
+}
+function setSugChip(groupId,value){document.getElementById(groupId).querySelectorAll(".dchip").forEach(function(c){c.classList.remove("on","suggested");if(c.textContent===value)c.classList.add("suggested");});}
+function setEmoji(btn){document.querySelectorAll(".emoji-btn").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");}
+// ===== ストレージ =====
+// ストレージキー
+// 現在はlocalStorageを使用（端末への保存）
+// アプリ化の際はFirebase/Supabase等のクラウドストレージに移行予定
+// saveRecordToStorage / loadRecords 関数を差し替えるだけで移行可能な設計
+var STORAGE_KEY = 'fuwari_records';
+
+function loadRecords(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function saveRecordToStorage(record){
+  try{
+    var records = loadRecords();
+    records.push(record);
+    // 最大365件保持
+    if(records.length > 365) records = records.slice(-365);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }catch(e){ console.log('storage error:', e); }
+}
+
+function getTodayKey(){
+  var d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+function getStreak(records){
+  if(!records.length) return 0;
+  var today = new Date();
+  var streak = 0;
+  for(var i=0; i<365; i++){
+    var d = new Date(today);
+    d.setDate(today.getDate() - i);
+    var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var rec = records.find(function(r){ return r.date === key; });
+    if(rec && rec.tummy === 'good'){
+      streak++;
+    } else if(rec && rec.tummy !== 'good'){
+      break;
+    } else {
+      // 記録なし日はスキップ（連続を切らない）
+      if(i > 0) break;
+    }
+  }
+  return streak;
+}
+
+function initFromStorage(){
+  var records = loadRecords();
+  // 連続日数を計算
+  var s = getStreak(records);
+  if(s > 0){ streak = s; renderMilestone(streak); }
+  // 今日すでに記録済みかチェック
+  var todayRec = records.find(function(r){ return r.date === getTodayKey(); });
+  if(todayRec){
+    // 今日の記録を復元
+    tummyState = todayRec.tummy || null;
+    if(tummyState){
+      var btns = document.querySelectorAll('.tummy-btn');
+      var map = {'good':0,'warn':1,'bad':2};
+      if(map[tummyState] !== undefined) btns[map[tummyState]].classList.add('on');
+      if(tummyState !== 'good') document.getElementById('detail-area').className = 'detail-area show';
+      if(tummyState === 'good') document.getElementById('good-photo-area').style.display = 'block';
+    }
+  }
+}
+
+function saveRecord(){
+  var tummy = tummyState || 'good';
+  var chips = Array.from(document.querySelectorAll('.dchip.on,.dchip.suggested')).map(function(c){return c.textContent;});
+  var memo = document.getElementById('rec-memo').value;
+  var med = document.getElementById('rec-med').value;
+  var emoji = document.querySelector('.emoji-btn.on');
+
+  var record = {
+    date: getTodayKey(),
+    tummy: tummy,
+    chips: chips,
+    memo: memo,
+    med: med,
+    emoji: emoji ? emoji.textContent : '',
+    hasPhoto: !!photoImgData,
+    ts: Date.now()
+  };
+
+  saveRecordToStorage(record);
+  var isGood = tummy === 'good';
+  var sc = document.getElementById("saved-card");
+  var newStreak = getStreak(loadRecords());
+  if(newStreak !== streak){ streak = newStreak; renderMilestone(streak); }
+  if(isGood){
+    document.getElementById("saved-icon").textContent="🫧";
+    document.getElementById("saved-title").textContent="記録しました！";
+    document.getElementById("saved-msg").textContent="血便なし "+streak+"日連続です。
+シャボン玉がもう一つ、ふわりと増えました。";
+  } else {
+    document.getElementById("saved-icon").textContent="💙";
+    document.getElementById("saved-title").textContent="記録しました";
+    document.getElementById("saved-msg").textContent="つらい日も、記録してくれてありがとう。
+この記録が、次の診察できっと役に立ちます。";
+  }
+  sc.className="saved-card show";sc.scrollIntoView({behavior:"smooth"});
+  setTimeout(function(){sc.className="saved-card";},5000);
+}
+function showDoctor(){
+  var chips=Array.from(document.querySelectorAll(".dchip.on,.dchip.suggested")).map(function(c){return c.textContent;});
+  var dc=document.getElementById("doctor-card");dc.className="doctor-card show";
+  document.getElementById("doctor-content").innerHTML="<b>記録日：</b>"+new Date().toLocaleDateString("ja-JP")+"<br><b>症状：</b>"+(chips.length?chips.join("、"):"記録なし")+"<br><b>写真：</b>"+(photoImgData?"1枚（アプリ内保護フォルダ）":"なし")+"<br><b>血便なし連続：</b>"+streak+"日<br><span style='font-size:11px;color:#888'>※AIによる参考記録です。必ず主治医にご確認ください。</span>";
+  dc.scrollIntoView({behavior:"smooth"});
+}
+
+// 振り返る
+var currentPeriod=30;
+// デモデータ生成（急性期→改善の流れ）
+function genDemoData(days){
+  var records = loadRecords();
+  var data = [];
+  var today = new Date();
+  for(var i=days-1; i>=0; i--){
+    var d = new Date(today);
+    d.setDate(today.getDate() - i);
+    var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var rec = records.find(function(r){ return r.date === key; });
+    if(rec){
+      data.push(rec.tummy === 'good' ? 'good' : rec.tummy === 'warn' ? 'mid' : 'bad');
+    } else {
+      // 記録なし日は'none'として明示
+      data.push('none');
+    }
+  }
+  return data;
+}
+function setPeriod(days,btn){
+  currentPeriod=days;
+  document.querySelectorAll(".period-btn").forEach(function(b){b.classList.remove("on");});
+  btn.classList.add("on");
+  renderReviewGraph(days);
+}
+function renderReviewGraph(days){
+  var labels={"7":"7日","30":"1か月","90":"3か月","180":"半年"};
+  document.getElementById("graph-title").textContent="おなかの様子（"+labels[days]+"）";
+  var data=genDemoData(days);
+  var good=data.filter(function(d){return d==="good";}).length;
+  var mid=data.filter(function(d){return d==="mid";}).length;
+  var bad=data.filter(function(d){return d==="bad";}).length;
+  var none=data.filter(function(d){return d==="none";}).length;
+  var gw=document.getElementById("review-graph");gw.innerHTML="";
+  // バーの間引き（最大30本）
+  var step=Math.ceil(days/30);
+  var gh={good:100,mid:55,bad:20,none:0};
+  for(var i=0;i<data.length;i+=step){
+    var w=document.createElement("div");w.className="g-bar-w";
+    var bar=document.createElement("div");
+    if(data[i]==="none"){
+      bar.className="g-bar";bar.style.height="4px";bar.style.background="#E8E6E0";bar.style.borderRadius="2px";bar.title="記録なし☺";
+    } else {
+      bar.className="g-bar "+data[i];bar.style.height=gh[data[i]]+"%";
+    }
+    w.appendChild(bar);gw.appendChild(w);
+  }
+  // カレンダー描画（7日・30日のみ）
+  renderCalendar(days,data);
+  // 写真タイムライン
+  renderPhotoTimeline(days,data);
+  // サマリー
+  var goodPct=Math.round(good/days*100);
+  var firstHalf=data.slice(0,Math.floor(days/2));
+  var secondHalf=data.slice(Math.floor(days/2));
+  var firstGood=firstHalf.filter(function(d){return d==="good";}).length/firstHalf.length;
+  var secondGood=secondHalf.filter(function(d){return d==="good";}).length/secondHalf.length;
+  var improving=secondGood>firstGood;
+  var recorded = good+mid+bad;
+  document.getElementById("period-summary").innerHTML=
+    '<div class="summary-row"><div class="summary-lbl">おだやかな日</div><div class="summary-val good">'+good+' 日（'+goodPct+'%）</div></div>'+
+    '<div class="summary-row"><div class="summary-lbl">少し気になる日</div><div class="summary-val">'+mid+' 日</div></div>'+
+    '<div class="summary-row"><div class="summary-lbl">つらかった日</div><div class="summary-val bad">'+bad+' 日</div></div>'+
+    '<div class="summary-row"><div class="summary-lbl">記録なし（☺）</div><div class="summary-val" style="color:#5DCAA5;font-weight:500">'+none+' 日</div></div>'+
+    '<div class="summary-row"><div class="summary-lbl">記録した日数</div><div class="summary-val">'+recorded+' / '+days+' 日</div></div>';
+  var tm=document.getElementById("trend-messages");tm.innerHTML="";
+  if(improving){
+    tm.innerHTML='<div class="trend-card positive"><div class="trend-icon">🫧</div><div class="trend-txt">前半より後半の方が、<strong>おだやかな日が増えています</strong>。少しずつ、前に進んでいます。</div></div>';
+  }else{
+    tm.innerHTML='<div class="trend-card neutral"><div class="trend-icon">💙</div><div class="trend-txt">波のある日々が続いています。記録し続けていることは、きっと力になっています。</div></div>';
+  }
+}
+function renderCalendar(days,data){
+  var calCard=document.getElementById("cal-card");
+  var calGrid=document.getElementById("cal-grid");
+  calGrid.innerHTML="";
+  // 30日以内のみカレンダー表示
+  if(days>30){calCard.style.display="none";return;}
+  calCard.style.display="block";
+  document.getElementById("cal-title").textContent="日別カレンダー（直近"+days+"日）";
+  // 今日から遡ってdays日分
+  var today=new Date();
+  var startDay=new Date(today);
+  startDay.setDate(today.getDate()-(days-1));
+  // 月の最初の曜日まで空白を埋める
+  var firstDow=startDay.getDay(); // 0=日
+  for(var k=0;k<firstDow;k++){
+    var blank=document.createElement("div");
+    blank.className="cal-day";blank.textContent="";
+    calGrid.appendChild(blank);
+  }
+  // デモ：写真がある日をランダムに設定
+  var photoDays={};
+  data.forEach(function(d,i){if(Math.random()<0.3) photoDays[i]=true;});
+  data.forEach(function(d,i){
+    var dayEl=document.createElement("div");
+    var date=new Date(startDay);date.setDate(startDay.getDate()+i);
+    dayEl.className="cal-day "+d+(photoDays[i]?" has-photo":"");
+    if(i===days-1) dayEl.classList.add("today");
+    dayEl.textContent=date.getDate();
+    calGrid.appendChild(dayEl);
+  });
+}
+function renderPhotoTimeline(days,data){
+  var ptCard=document.getElementById("photo-timeline-card");
+  var ptList=document.getElementById("photo-timeline");
+  ptList.innerHTML="";
+  // 写真がある日を抽出（デモ）
+  var photos=[];
+  var today=new Date();
+  data.forEach(function(d,i){
+    if(Math.random()<0.25){
+      var date=new Date(today);date.setDate(today.getDate()-(days-1-i));
+      photos.push({state:d,date:date,idx:i});
+    }
+  });
+  if(!photos.length){ptCard.style.display="none";return;}
+  ptCard.style.display="block";
+  var stateLabel={"good":"おだやかな日","mid":"少し気になる日","bad":"つらかった日"};
+  var stateIcon={"good":"🫧","mid":"😟","bad":"😢"};
+  photos.slice(-5).reverse().forEach(function(p){
+    var item=document.createElement("div");item.className="photo-tl-item";
+    var thumb=document.createElement("div");thumb.className="photo-tl-thumb";
+    thumb.textContent=stateIcon[p.state];
+    var txt=document.createElement("div");txt.className="photo-tl-txt";
+    var dateStr=p.date.getMonth()+1+"月"+p.date.getDate()+"日";
+    txt.innerHTML='<div class="photo-tl-date">'+dateStr+'</div><div class="photo-tl-state">'+stateLabel[p.state]+'の記録</div>';
+    item.appendChild(thumb);item.appendChild(txt);
+    ptList.appendChild(item);
+  });
+}
+function showReviewDoctor(){
+  var dc=document.getElementById("review-doctor-card");dc.className="doctor-card show";
+  var labels={"7":"7日間","30":"1か月","90":"3か月","180":"半年"};
+  var data=genDemoData(currentPeriod);
+  var good=data.filter(function(d){return d==="good";}).length;
+  var bad=data.filter(function(d){return d==="bad";}).length;
+  document.getElementById("review-doctor-content").innerHTML=
+    "<b>集計期間：</b>直近"+labels[currentPeriod]+"<br>"+
+    "<b>おだやかな日：</b>"+good+"日（"+Math.round(good/currentPeriod*100)+"%）<br>"+
+    "<b>つらかった日：</b>"+bad+"日<br>"+
+    "<b>血便なし連続：</b>"+streak+"日（現在）<br>"+
+    "<span style='font-size:11px;color:#888'>「ふわりととどく」アプリの記録データです。</span>";
+  dc.scrollIntoView({behavior:"smooth"});
+}
+// 初期グラフ描画
+renderReviewGraph(30);
+
+// ===== つながる =====
+var CONN_POSTS = [
+  {id:1,who:"付き添いの母",avatar:"👩",stage:"acute",stageLabel:"急性期・入院中",when:"2時間前",body:"今日で入院17日目。娘が「ママ一緒に寝てね」って言ってくれた。狭いベッドで二人で寝た。せまかったけど、それで十分だと思った。",likes:24,liked:false},
+  {id:2,who:"IBDパパ",avatar:"👨",stage:"maintain",stageLabel:"治療継続中",when:"5時間前",body:"レミケードの投与から3年。先生に「数値安定してますね」って言ってもらえた。この言葉を聞くたびに、続けてきてよかったと思う。",likes:41,liked:false},
+  {id:3,who:"寛解中の本人",avatar:"🧒",stage:"remission",stageLabel:"寛解中",when:"昨日",body:"今日、給食を全部食べられた。それだけで泣きそうになった。普通のことが、全然普通じゃなかったから。",likes:87,liked:false},
+  {id:4,who:"付き添いの父",avatar:"👨",stage:"acute",stageLabel:"急性期・入院中",when:"昨日",body:"付き添いができなくて、病院の庭から昼にシャボン玉を飛ばした。10階まで届くかなと思いながら。届いたかどうかわからないけど、飛ばし続けた。",likes:63,liked:false},
+  {id:5,who:"3年目の母",avatar:"👩",stage:"maintain",stageLabel:"治療継続中",when:"2日前",body:"内視鏡の結果待ち。毎回ここが一番怖い。でも、結果が何であれ、この子と一緒に向き合ってきたことは変わらない。",likes:35,liked:false},
+  {id:6,who:"寛解2年目",avatar:"🧑",stage:"remission",stageLabel:"寛解中",when:"3日前",body:"食べられるものが少しずつ増えてきた。今日はカレーを食べた。3年ぶりのカレー。泣きながら食べた。おいしかった。",likes:112,liked:false},
+];
+var connFilter='all'; var connStage=null; var connMode='watch';
+
+// ねぎらいをつながる画面にも
+document.getElementById('connect-neg').innerHTML=negHTML(neg);
+
+function setConnMode(mode){
+  connMode=mode;
+  document.getElementById('conn-watch-btn').className='mb'+(mode==='watch'?' on':'');
+  document.getElementById('conn-post-btn').className='mb'+(mode==='post'?' on':'');
+  document.getElementById('conn-watch').style.display=mode==='watch'?'block':'none';
+  document.getElementById('conn-post').style.display=mode==='post'?'block':'none';
+  if(mode==='watch') renderConnStream();
+}
+function setConnFilter(f,btn){
+  connFilter=f;
+  document.querySelectorAll('#conn-watch .chip').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderConnStream();
+}
+function setConnStage(s,btn){
+  connStage=s;
+  document.querySelectorAll('#conn-stage-chips .chip').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  connCheckReady();
+}
+function connUpdateCount(){
+  var v=document.getElementById('conn-input').value;
+  document.getElementById('conn-char').textContent=v.length;
+  connCheckReady();
+}
+function connCheckReady(){
+  var txt=document.getElementById('conn-input').value.trim();
+  document.getElementById('conn-submit').disabled=!(txt.length>0&&connStage);
+}
+function renderConnStream(){
+  var filtered=connFilter==='all'?CONN_POSTS:CONN_POSTS.filter(function(p){return p.stage===connFilter;});
+  var el=document.getElementById('conn-stream');
+  if(!filtered.length){el.innerHTML='<div class="empty">まだ投稿がありません</div>';return;}
+  el.innerHTML=filtered.map(function(p){
+    return '<div class="card" style="margin-bottom:10px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+p.avatar+'</div>'
+      +'<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#1a1a1a">'+p.who+'</div><div style="font-size:10px;color:#bbb">'+p.when+'</div></div>'
+      +'<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FBEAF0;color:#72243E">'+p.stageLabel+'</span>'
+      +'</div>'
+      +'<div style="font-size:13px;color:#444;line-height:1.8;margin-bottom:10px">'+p.body+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<button onclick="connLike('+p.id+')" id="clb-'+p.id+'" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;font-size:13px;cursor:pointer;font-family:inherit">'+(p.liked?'❤️':'🤍')+' とどいた</button>'
+      +'<span style="font-size:12px;color:#aaa" id="clc-'+p.id+'">'+p.likes+'</span>'
+      +'</div></div>';
+  }).join('');
+}
+function connLike(id){
+  var p=CONN_POSTS.find(function(x){return x.id===id;});
+  if(!p)return;
+  p.liked=!p.liked;p.likes+=p.liked?1:-1;
+  var btn=document.getElementById('clb-'+id);
+  btn.innerHTML=(p.liked?'❤️':'🤍')+' とどいた';
+  document.getElementById('clc-'+id).textContent=p.likes;
+}
+async function connSubmit(){
+  var txt=document.getElementById('conn-input').value.trim();
+  if(!txt||!connStage)return;
+  var btn=document.getElementById('conn-submit');
+  btn.disabled=true;btn.textContent='🫧 確認中…';
+  var prompt='あなたは「ふわりととどく」の投稿チェックAIです。IBDと闘う子どもや家族が匿名でつぶやける場所です。
+
+【投稿不可（ng）】
+・他者への攻撃・誹謗中傷
+・個人が特定できる情報
+・商品・サービスの宣伝
+・自傷・希死念慮を示す表現
+・読む人が深く傷つく絶望的な表現
+
+【要注意（warn）】
+・強い苦しみが表現されているが攻撃性はない
+
+【投稿可（ok）】
+・誠実な気持ちの表現
+
+以下のJSONのみで返してください：
+{"verdict":"ok|warn|ng","support":"warnまたはngの場合の温かいメッセージ（50字以内）"}
+
+【投稿内容】
+'+txt;
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var raw=data.content&&data.content[0]&&data.content[0].text;
+    var jm=raw&&raw.match(/\{[\s\S]*?\}/);
+    var result=jm?JSON.parse(jm[0]):{verdict:'ok'};
+    var cr=document.getElementById('conn-check-result');
+    if(result.verdict==='ng'){
+      cr.innerHTML='<div style="background:#FBEAF0;border:1px solid #E8C0C0;border-radius:14px;padding:16px;margin-bottom:12px"><div style="font-size:22px;margin-bottom:8px">💙</div><div style="font-size:13px;color:#555;line-height:1.7">'+(result.support||'今の気持ちは、信頼できる人や専門家に話してみてください。')+'</div></div>';
+      btn.disabled=false;btn.textContent='🫧 流す';return;
+    }
+    if(result.verdict==='warn'){
+      cr.innerHTML='<div style="background:#FEF3E2;border:1px solid #F0D090;border-radius:14px;padding:16px;margin-bottom:12px"><div style="font-size:22px;margin-bottom:8px">🫧</div><div style="font-size:13px;color:#555;line-height:1.7">'+(result.support||'とても辛い時間を過ごしているんですね。')+'</div><div style="display:flex;gap:8px;margin-top:10px"><button onclick="connDoPost()" style="padding:8px 18px;border-radius:99px;background:#5DCAA5;color:#fff;border:none;font-size:13px;cursor:pointer;font-family:inherit">このまま流す</button><button onclick="document.getElementById('conn-check-result').innerHTML=''" style="padding:8px 18px;border-radius:99px;border:1px solid #D8D6D0;background:#fff;color:#666;font-size:13px;cursor:pointer;font-family:inherit">書き直す</button></div></div>';
+      btn.disabled=false;btn.textContent='🫧 流す';return;
+    }
+    connDoPost();
+  }catch(e){connDoPost();}
+}
+function connDoPost(){
+  var txt=document.getElementById('conn-input').value.trim();
+  var stageLabels={acute:'急性期・入院中',maintain:'治療継続中',remission:'寛解中',family:'家族として'};
+  CONN_POSTS.unshift({id:Date.now(),who:'投稿者',avatar:'👤',stage:connStage,stageLabel:stageLabels[connStage],when:'たった今',body:txt,likes:0,liked:false});
+  document.getElementById('conn-input').value='';
+  document.getElementById('conn-char').textContent='0';
+  document.getElementById('conn-submit').disabled=true;
+  document.getElementById('conn-submit').textContent='🫧 流す';
+  document.getElementById('conn-check-result').innerHTML='';
+  var pm=document.getElementById('conn-posted');pm.style.display='block';
+  setTimeout(function(){pm.style.display='none';},4000);
+  setTimeout(function(){setConnMode('watch');},1500);
+}
+renderConnStream();
+
+// ===== 翻訳キャッシュ =====
+var transCache={};
+function addTransBtn(blogCard, blogId, fromLang, body){
+  if(fromLang==='日本語') return;
+  var bar=document.createElement('div');
+  bar.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px';
+  var btn=document.createElement('button');
+  btn.id='tbtn-'+blogId;
+  btn.style.cssText='font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid #C0DDD5;background:#fff;color:#085041;cursor:pointer;font-family:inherit';
+  btn.textContent='🌐 日本語に翻訳する';
+  btn.onclick=function(){ doTranslate(blogId, fromLang, body); };
+  bar.appendChild(btn);
+  blogCard.appendChild(bar);
+  var resDiv=document.createElement('div');
+  resDiv.id='tres-'+blogId;
+  resDiv.style.display='none';
+  blogCard.appendChild(resDiv);
+}
+async function doTranslate(blogId, fromLang, body){
+  var cacheKey=blogId+'_ja';
+  var btn=document.getElementById('tbtn-'+blogId);
+  var resDiv=document.getElementById('tres-'+blogId);
+  if(transCache[cacheKey]){
+    resDiv.style.display=resDiv.style.display==='none'?'block':'none';
+    btn.textContent=resDiv.style.display==='block'?'翻訳を隠す':'🌐 日本語に翻訳する';
+    return;
+  }
+  btn.disabled=true;btn.textContent='翻訳中…';
+  var prompt='以下のIBD患者・家族のブログを日本語に翻訳してください。医療用語はそのままにしてください。翻訳文のみ返してください。
+
+'+body;
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var translated=data.content&&data.content[0]&&data.content[0].text;
+    if(!translated) throw new Error('空');
+    transCache[cacheKey]=translated;
+    resDiv.innerHTML='<div style="background:#F5F3EE;border-radius:12px;padding:12px 14px;margin-top:8px;font-size:13px;color:#444;line-height:1.9">'+translated+'</div><div style="font-size:11px;color:#bbb;margin-top:5px">※ AIによる参考訳です。</div>';
+    resDiv.style.display='block';
+    btn.disabled=false;btn.textContent='翻訳を隠す';
+  }catch(e){
+    btn.disabled=false;btn.textContent='🌐 日本語に翻訳する';
+    alert('翻訳に失敗しました。');
+  }
+}
+</script>
+</body>
+</html>
