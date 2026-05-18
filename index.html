@@ -16,8 +16,8 @@
 ::-webkit-scrollbar-thumb{background:#D8D6D0;border-radius:99px}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #5DCAA5;outline-offset:2px}
 body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:#F5F3EE;min-height:100vh;display:flex;justify-content:center;padding:env(safe-area-inset-top,20px) 16px env(safe-area-inset-bottom,20px)}
-.screen{display:none;width:100%;max-width:390px;animation:fadeIn .25s ease}
-.screen.active{display:block}
+.screen{display:none !important;width:100%;max-width:390px;animation:fadeIn .25s ease}
+.screen.active{display:block !important}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .brow{display:flex;align-items:flex-end;gap:4px;margin-bottom:4px}
 .bub{border-radius:50%;background:#9FE1CB}
@@ -647,9 +647,11 @@ textarea.rec-input{resize:none;height:80px;line-height:1.7}
 <input type="file" id="file-library" accept="image/*" onchange="handlePhoto(this)">
 
 <script>
+// PWA登録（DOMContentLoadedの外）
+if('serviceWorker' in navigator) window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+
 window.addEventListener('DOMContentLoaded', function(){
 try{
-if('serviceWorker' in navigator) window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
 var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
 if(isIOS&&!isStandalone){document.getElementById('install-banner').style.display='flex';}
