@@ -417,7 +417,7 @@ input[type="file"]{display:none}
 <input type="file" id="file-library" accept="image/*">
 
 <script>
-(function() {
+window.onload = function() {
 
 // ===== 画面遷移 =====
 function go(id) {
@@ -1036,7 +1036,7 @@ function connDoPost() {
   }, 1500);
 }
 
-})();
+};
 </script>
 </body>
 </html>
