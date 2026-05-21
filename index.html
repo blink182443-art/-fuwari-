@@ -615,9 +615,7 @@ function renderQuiz(q) {
         document.getElementById('q-rmsg').textContent = ok ? '正解！' : '不正解… 正解は「' + q.options[q.answer] + '」です';
         document.getElementById('q-rmsg').className = 'r-msg ' + (ok ? 'ok' : 'ng');
         var expTxt = q.explanation || '';
-        if (q.source) expTxt += '
-
-📄 出典：' + q.source;
+        if (q.source) expTxt += '\n\n📄 出典：' + q.source;
         document.getElementById('q-exp-text').textContent = expTxt;
         document.getElementById('q-exp').className = 'exp show';
         document.getElementById('q-next').style.display = 'block';
